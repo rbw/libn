@@ -18,19 +18,19 @@ else:
     eca = ['-fopenmp']
 
 setup(
-    name="nanopy",
+    name="libn",
     version='0.0.1',
-    packages=['nanopy'],
+    packages=['libn'],
     description='Python implementation of NANO-related functions.',
-    url='https://github.com/nano128/nanopy',
-    author='128',
+    url='https://github.com/rbw/libn',
+    author='rbw@vault13.org',
     license='MIT',
-    python_requires='>=3.0',
+    python_requires='>=3.5',
     install_requires=['requests'],
     ext_modules=[
         Extension(
-            'nanopy.work',
-            sources=['nanopy/work.c'],
+            'libn.work',
+            sources=['libn/work.c'],
             extra_compile_args=eca,
             extra_link_args=ela,
             libraries=libs,

@@ -5,4 +5,4 @@ test.py
 __pycache__/
 build/
 dist/
-nanopy/__pycache__/
+libn/__pycache__/

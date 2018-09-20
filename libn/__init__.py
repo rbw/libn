@@ -1,4 +1,4 @@
-import hashlib, decimal, nanopy.ed25519_blake2b
+import hashlib, decimal, libn.ed25519_blake2b
 
 account_prefix = 'nano_'
 mrai_name = 'NANO'
@@ -77,7 +77,7 @@ def validate_account_number(account):
 
 def key_expand(key):
     sk = bytes.fromhex(key)
-    pk = nanopy.ed25519_blake2b.publickey(sk).hex()
+    pk = libn.ed25519_blake2b.publickey(sk).hex()
     return key, pk, account_get(pk)
 
 
@@ -109,10 +109,10 @@ def work_validate(work, _hash):
 
 
 try:
-    import nanopy.work
+    import libn.work
 
     def work_generate(_hash):
-        work = format(nanopy.work.generate(bytes.fromhex(_hash)), '016x')
+        work = format(libn.work.generate(bytes.fromhex(_hash)), '016x')
         assert work_validate(work, _hash)
         return work
 except ModuleNotFoundError:
@@ -201,6 +201,6 @@ def block_hash(block):
 
 
 def sign_block(sk, pk, block):
-    return nanopy.ed25519_blake2b.signature(
+    return libn.ed25519_blake2b.signature(
         bytes.fromhex(block_hash(block)), bytes.fromhex(sk),
         bytes.fromhex(pk)).hex()
