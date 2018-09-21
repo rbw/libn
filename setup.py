@@ -19,7 +19,7 @@ else:
 
 setup(
     name="libn",
-    version='0.1.0',
+    version='0.1.1',
     packages=['libn'],
     description='Python implementation of NANO-related functions.',
     url='https://github.com/rbw/libn',
