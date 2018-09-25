@@ -1,9 +1,9 @@
-import hashlib, decimal, libn.ed25519_blake2b
+import hashlib, decimal, nanopy.ed25519_blake2b
 
 account_prefix = 'nano_'
 mrai_name = 'NANO'
 available_supply = 133248289196499221154116917710445381553
-work_limit = b'\xFF\xFF\xFF\xC0\x00\x00\x00\x00'
+work_threshold = 'ffffffc000000000'
 
 decimal.getcontext().traps[decimal.Inexact] = 1
 decimal.getcontext().prec = 40
@@ -77,7 +77,7 @@ def validate_account_number(account):
 
 def key_expand(key):
     sk = bytes.fromhex(key)
-    pk = libn.ed25519_blake2b.publickey(sk).hex()
+    pk = nanopy.ed25519_blake2b.publickey(sk).hex()
     return key, pk, account_get(pk)
 
 
@@ -94,6 +94,7 @@ def deterministic_key(seed, index):
 def work_validate(work, _hash):
     workb = bytearray.fromhex(work)
     hashb = bytearray.fromhex(_hash)
+    work_thresholdb = bytearray.fromhex(work_threshold)
 
     workb.reverse()
 
@@ -104,15 +105,17 @@ def work_validate(work, _hash):
     final = bytearray(h.digest())
     final.reverse()
 
-    if final > work_limit: return True
+    if final > work_thresholdb: return True
     return False
 
 
 try:
-    import libn.work
+    import nanopy.work
 
     def work_generate(_hash):
-        work = format(libn.work.generate(bytes.fromhex(_hash)), '016x')
+        work = format(
+            nanopy.work.generate(bytes.fromhex(_hash), int(work_threshold, 16)),
+            '016x')
         assert work_validate(work, _hash)
         return work
 except ModuleNotFoundError:
@@ -122,7 +125,8 @@ except ModuleNotFoundError:
     def work_generate(_hash):
         hashb = bytearray.fromhex(_hash)
         b2bb = bytearray.fromhex('0000000000000000')
-        while b2bb < work_limit:
+        work_thresholdb = bytearray.fromhex(work_threshold)
+        while b2bb < work_thresholdb:
             workb = bytearray((random.getrandbits(8) for i in range(8)))
             for r in range(0, 256):
                 workb[7] = (workb[7] + r) % 256
@@ -131,7 +135,7 @@ except ModuleNotFoundError:
                 h.update(hashb)
                 b2bb = bytearray(h.digest())
                 b2bb.reverse()
-                if b2bb >= work_limit: break
+                if b2bb >= work_thresholdb: break
 
         workb.reverse()
         assert work_validate(workb.hex(), _hash)
@@ -201,6 +205,6 @@ def block_hash(block):
 
 
 def sign_block(sk, pk, block):
-    return libn.ed25519_blake2b.signature(
+    return nanopy.ed25519_blake2b.signature(
         bytes.fromhex(block_hash(block)), bytes.fromhex(sk),
         bytes.fromhex(pk)).hex()

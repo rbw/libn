@@ -1,18 +1,50 @@
-from setuptools import setup, Extension
 import sys
+import os
+from setuptools import setup, Extension
+
 
 eca = []
 ela = []
 libs = []
 macros = []
 
+
+GCC_MIN_MAX = (5, 9)
+
+
+def find_executable(name):
+    path = os.getenv('PATH')
+    for p in path.split(os.path.pathsep):
+        full_path = os.path.join(p, name)
+        if os.path.exists(full_path) and os.access(full_path, os.X_OK):
+            return full_path
+
+    return None
+
+
+def gcc_get_latest():
+    # generate list of gcc versions to look for, starting with the most recent
+    gcc_versions = ['gcc-{version}'.format(version=i) for i in range(*GCC_MIN_MAX).__reversed__()]
+
+    for gv in gcc_versions:
+        gcc_executable = find_executable(gv)
+        if gcc_executable:
+            return gcc_executable
+
+    raise FileNotFoundError('could not find an up-to-date version of gcc')
+
+
+os.environ['CC'] = 'gcc'
+
 if '--enable-gpu' in sys.argv:
     sys.argv.remove('--enable-gpu')
-    libs = ['OpenCL']
-    macros = [('HAVE_CL_CL_H', '1')]
     if sys.platform == 'darwin':
         macros = [('HAVE_OPENCL_OPENCL_H', '1')]
         ela = ['-framework', 'OpenCL']
+        os.environ['CC'] = gcc_get_latest()
+    else:
+        macros = [('HAVE_CL_CL_H', '1')]
+        libs = ['OpenCL']
 else:
     libs = ['b2']
     eca = ['-fopenmp']
