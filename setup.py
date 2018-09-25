@@ -46,7 +46,7 @@ if '--enable-gpu' in sys.argv:
         macros = [('HAVE_CL_CL_H', '1')]
         libs = ['OpenCL']
 else:
-    libs = ['b2']
+    libs = ['b2', 'omp']
     eca = ['-fopenmp']
 
 setup(
