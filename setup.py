@@ -31,17 +31,16 @@ def gcc_get_latest():
         if gcc_executable:
             return gcc_executable
 
-    raise FileNotFoundError('could not find an up-to-date version of gcc')
+    return None
 
 
-os.environ['CC'] = 'gcc'
+os.environ['CC'] = gcc_get_latest() or 'gcc'
 
 if '--enable-gpu' in sys.argv:
     sys.argv.remove('--enable-gpu')
     if sys.platform == 'darwin':
         macros = [('HAVE_OPENCL_OPENCL_H', '1')]
         ela = ['-framework', 'OpenCL']
-        os.environ['CC'] = gcc_get_latest()
     else:
         macros = [('HAVE_CL_CL_H', '1')]
         libs = ['OpenCL']
@@ -51,7 +50,7 @@ else:
 
 setup(
     name="libn",
-    version='0.1.2',
+    version='0.1.3',
     packages=['libn'],
     description='Python implementation of NANO-related functions.',
     url='https://github.com/rbw/libn',
