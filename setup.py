@@ -1,56 +1,53 @@
+# -*- coding: utf-8 -*-
+
 import sys
 import os
 from setuptools import setup, Extension
 
+eca = ela = libs = macros = None
 
-eca = []
-ela = []
-libs = []
-macros = []
-
-
-GCC_MIN_MAX = (5, 9)
+GCC_MIN_MAX = (5, 9)  # Look for gcc version between 5 and 9
+POW_GPU = os.environ.pop('LIBN_USE_GPU', False)  # Enable GPU work generation using OpenCL
+DARWIN_WANTS_OMP = os.environ.pop('DARWIN_LINK_OMP', False)  # Link with the OMP library (OSX)
 
 
-def find_executable(name):
-    path = os.getenv('PATH')
-    for p in path.split(os.path.pathsep):
-        full_path = os.path.join(p, name)
-        if os.path.exists(full_path) and os.access(full_path, os.X_OK):
-            return full_path
+def get_gcc():
+    path = os.getenv('PATH').split(os.path.pathsep)
 
-    return None
+    for version in range(*GCC_MIN_MAX).__reversed__():
+        f_name = 'gcc-{0}'.format(version)
 
+        for _dir in path:
+            full_path = os.path.join(_dir, f_name)
+            if os.path.exists(full_path) and os.access(full_path, os.X_OK):
+                return f_name
 
-def gcc_get_latest():
-    # generate list of gcc versions to look for, starting with the most recent
-    gcc_versions = ['gcc-{version}'.format(version=i) for i in range(*GCC_MIN_MAX).__reversed__()]
-
-    for gv in gcc_versions:
-        gcc_executable = find_executable(gv)
-        if gcc_executable:
-            return gcc_executable
-
-    return None
+    raise FileNotFoundError('Requires gcc version between {0[0]} and {0[1]}'.format(GCC_MIN_MAX))
 
 
-os.environ['CC'] = gcc_get_latest() or 'gcc'
-
-if '--enable-gpu' in sys.argv:
-    sys.argv.remove('--enable-gpu')
-    if sys.platform == 'darwin':
+if sys.platform == 'darwin':
+    if POW_GPU:
         macros = [('HAVE_OPENCL_OPENCL_H', '1')]
         ela = ['-framework', 'OpenCL']
     else:
+        libs = ['b2', 'omp'] if DARWIN_WANTS_OMP else ['b2']
+        eca = ['-fopenmp']
+elif sys.platform == 'linux':
+    if POW_GPU:
         macros = [('HAVE_CL_CL_H', '1')]
         libs = ['OpenCL']
+    else:
+        libs = ['b2']
+        eca = ['-fopenmp']
 else:
-    libs = ['b2', 'omp']
-    eca = ['-fopenmp']
+    raise OSError('Unsupported OS platform')
+
+# Use the most recent version of gcc
+os.environ['CC'] = get_gcc()
 
 setup(
     name="libn",
-    version='0.1.4',
+    version='0.1.5',
     packages=['libn'],
     description='Python implementation of NANO-related functions.',
     url='https://github.com/rbw/libn',
@@ -66,5 +63,7 @@ setup(
             extra_compile_args=eca,
             extra_link_args=ela,
             libraries=libs,
-            define_macros=macros)
-    ])
+            define_macros=macros
+        )
+    ]
+)
