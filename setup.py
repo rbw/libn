@@ -6,9 +6,9 @@ from setuptools import setup, Extension
 
 eca = ela = libs = macros = None
 
-GCC_MIN_MAX = (5, 9)  # Look for gcc version between 5 and 9
-POW_GPU = os.environ.pop('LIBN_USE_GPU', False)  # Enable GPU work generation using OpenCL
-DARWIN_WANTS_OMP = os.environ.pop('DARWIN_LINK_OMP', False)  # Link with the OMP library (OSX)
+GCC_MIN_MAX = (5, 9)  # Look for gcc versions between 5 and 9
+POW_GPU = os.environ.pop('USE_GPU', False)  # Enable GPU work generation using OpenCL
+LINK_OMP = os.environ.pop('LINK_OMP', False)  # Link with the OMP library (OSX)
 
 
 def get_gcc():
@@ -30,7 +30,7 @@ if sys.platform == 'darwin':
         macros = [('HAVE_OPENCL_OPENCL_H', '1')]
         ela = ['-framework', 'OpenCL']
     else:
-        libs = ['b2', 'omp'] if DARWIN_WANTS_OMP else ['b2']
+        libs = ['b2', 'omp'] if LINK_OMP else ['b2']
         eca = ['-fopenmp']
 elif sys.platform == 'linux':
     if POW_GPU:
