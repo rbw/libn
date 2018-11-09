@@ -70,7 +70,7 @@ def get_ext_kwargs(use_gpu=False, link_omp=False, platform=None):
 env = os.environ
 env['CC'] = env.get('CC', None) or find_gcc(
     *(5, 9),
-    dirs=env.get('PATH').split(os.path.pathsep)
+    dirs=env.get('PATH', '').split(os.path.pathsep)
 )
 
 setup(
