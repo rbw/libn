@@ -24,7 +24,7 @@ def find_gcc(*min_max, dirs):
             if os.path.exists(full_path) and os.access(full_path, os.X_OK):
                 return f_name
 
-    return ''
+    return 'gcc'
 
 
 def get_ext_kwargs(use_gpu=False, link_omp=False, platform=None):
@@ -75,7 +75,7 @@ env['CC'] = env.get('CC', None) or find_gcc(
 
 setup(
     name="libn",
-    version='0.1.10',
+    version='0.1.11',
     packages=['libn'],
     description='Python implementation of NANO-related functions.',
     url='https://github.com/rbw/libn',
