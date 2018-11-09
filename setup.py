@@ -75,7 +75,7 @@ env['CC'] = env.get('CC', None) or find_gcc(
 
 setup(
     name="libn",
-    version='0.1.8',
+    version='0.1.9',
     packages=['libn'],
     description='Python implementation of NANO-related functions.',
     url='https://github.com/rbw/libn',
